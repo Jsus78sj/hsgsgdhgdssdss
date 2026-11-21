@@ -1,0 +1,191 @@
+diff -ruN -x node_modules proj/index.html proj-trial/index.html
+--- proj/index.html	2026-10-26 18:29:22.000000000 +0000
++++ proj-trial/index.html	2026-10-30 00:44:42.784758439 +0000
+@@ -316,7 +316,6 @@
+ <link rel="modulepreload" href="src/tools/sketch.js">
+ <link rel="modulepreload" href="src/tools/openings.js">
+ <link rel="modulepreload" href="src/tools/parts.js">
+-<link rel="modulepreload" href="src/tools/roof.js">
+ <link rel="modulepreload" href="src/core/callouts.js">
+ <link rel="modulepreload" href="src/core/ref.js">
+ <link rel="modulepreload" href="src/core/sheet.js">
+@@ -337,24 +336,12 @@
+ <link rel="modulepreload" href="src/io/project.js">
+ <link rel="modulepreload" href="src/io/boqcsv.js">
+ <link rel="modulepreload" href="src/tools/boq.js">
+-<link rel="modulepreload" href="src/io/boqreport.js">
+-<link rel="modulepreload" href="src/tools/boqreport.js">
+-<link rel="modulepreload" href="src/core/elevation.js">
+-<link rel="modulepreload" href="src/tools/elev.js">
+-<link rel="modulepreload" href="src/core/section.js">
+-<link rel="modulepreload" href="src/tools/section.js">
+-<link rel="modulepreload" href="src/tools/sheet.js">
+-<link rel="modulepreload" href="src/tools/clouds.js">
+ <link rel="modulepreload" href="src/tools/groups.js">
+-<link rel="modulepreload" href="src/core/macros.js">
+-<link rel="modulepreload" href="src/ai/plan.js">
+-<link rel="modulepreload" href="src/ai/run.js">
+-<link rel="modulepreload" href="src/ai/macrorun.js">
+-<link rel="modulepreload" href="src/tools/macros.js">
+ <link rel="modulepreload" href="src/core/templates.js">
+ <link rel="modulepreload" href="src/tools/levelmgr.js">
+ <link rel="modulepreload" href="src/tools/tplscript.js">
+ <link rel="modulepreload" href="src/tools/showcase.js">
++<link rel="modulepreload" href="src/ui/lazy-civil.js">
+ <link rel="modulepreload" href="src/ui/cmdkeys.js">
+ <link rel="modulepreload" href="src/tools/cleanup.js">
+ <link rel="modulepreload" href="src/tools/dedup.js">
+@@ -406,6 +393,9 @@
+ <link rel="modulepreload" href="src/ui/historypanel.js">
+ <link rel="modulepreload" href="src/ui/cursorhint.js">
+ <link rel="modulepreload" href="src/ui/ribbon/wire.js">
++<link rel="modulepreload" href="src/core/macros.js">
++<link rel="modulepreload" href="src/ai/plan.js">
++<link rel="modulepreload" href="src/ai/run.js">
+ <link rel="modulepreload" href="src/tools/presets.js">
+ <link rel="modulepreload" href="src/ui/recentbar.js">
+ <link rel="modulepreload" href="src/io/snaps.js">
+@@ -413,6 +403,7 @@
+ <link rel="modulepreload" href="src/tutor/lessons.js">
+ <link rel="modulepreload" href="src/tools/blockcollect.js">
+ <link rel="modulepreload" href="src/ui/blockpanel.js">
++<link rel="modulepreload" href="src/ai/macrorun.js">
+ <link rel="modulepreload" href="src/ui/palette.js">
+ <link rel="modulepreload" href="src/ui/tour.js">
+ <link rel="modulepreload" href="src/ui/appcmds.js">
+diff -ruN -x node_modules proj/src/app.js proj-trial/src/app.js
+--- proj/src/app.js	2026-10-25 01:28:42.000000000 +0000
++++ proj-trial/src/app.js	2026-10-30 00:44:42.724758439 +0000
+@@ -13,20 +13,14 @@
+ import "./tools/sketch.js";
+ import "./tools/openings.js";
+ import "./tools/parts.js";
+-import "./tools/roof.js";
+ import "./tools/areas.js";
+ import "./tools/modify.js";
+ import "./tools/annotate.js";
+ import "./tools/ref.js";
+ import "./tools/boq.js";
+-import "./tools/boqreport.js";
+-import "./tools/elev.js";
+-import "./tools/section.js";
+-import "./tools/sheet.js";
+-import "./tools/clouds.js";
+ import "./tools/groups.js";
+-import "./tools/macros.js";
+ import "./tools/showcase.js";
++import "./ui/lazy-civil.js";
+ import {keysFor,renderKeys} from "./ui/cmdkeys.js";     /* قالب «فيلا العرض»: يُبنى بالأدوات نفسها */
+ import "./ui/hygiene.js";
+ import "./ui/gate.js";
+diff -ruN -x node_modules proj/src/tools/registry.js proj-trial/src/tools/registry.js
+--- proj/src/tools/registry.js	2026-10-21 05:15:46.000000000 +0000
++++ proj-trial/src/tools/registry.js	2026-10-30 00:42:47.552758439 +0000
+@@ -229,6 +229,10 @@
+ export function begin(id,arg){
+  const d=(id&&typeof id==="object")?id:findTool(id);
+  if(!d){H.rep("wr",`أداة غير معروفة: ${id}`);return false}
++ if(d.lazy){            /* تجربة م٠: عقبٌ كسول — يُحمَّل ثم يُبدأ الحقيقيّ (غير متزامن) */
++  d.lazy().then(()=>{const r=findTool(d.id); if(r&&!r.lazy)begin(r,arg)}).catch(e=>H.rep("er",e.message));
++  return true;
++ }
+  if(T.def)cancel(true);
+  T.def=d; T.id=d.id;
+  T.steps=(d.steps||[]).slice();
+diff -ruN -x node_modules proj/src/ui/lazy-civil.js proj-trial/src/ui/lazy-civil.js
+--- proj/src/ui/lazy-civil.js	1970-01-01 00:00:00.000000000 +0000
++++ proj-trial/src/ui/lazy-civil.js	2026-10-30 00:42:47.520758439 +0000
+@@ -0,0 +1,31 @@
++/* ═══ تجربة م٠ ب٠-٣ ═══ عقبُ الأدوات الكسولة (مولَّد) — لا يُشحن */
++import {defTool,TOOLS} from "../tools/registry.js";
++const L=(d,f)=>{if(!TOOLS[d.id]||TOOLS[d.id].lazy)defTool(Object.assign(d,{lazy:f}))};
++const roof=()=>import("../tools/roof.js");
++L({"id":"roof","alias":"rf سقف","label":"سقف","hint":"نقاط الحلقة · Enter أو C يُغلق · Esc يلغي · U يتراجع"},roof);
++const boqreport=()=>import("../tools/boqreport.js");
++L({"id":"report","alias":"report تقرير","label":"تقرير العميل","hint":"يولّد تقرير HTML وجدول فتحات CSV ويُنزّلهما — قراءةٌ لا تعديل"},boqreport);
++const elev=()=>import("../tools/elev.js");
++L({"id":"elev","alias":"واجهة الواجهة elevation","label":"واجهة","hint":"يفرد الجدران الخارجية المواجهة · ELEV S أو ELEV 315 — ولا تتحدّث تلقائياً بعدها"},elev);
++const section=()=>import("../tools/section.js");
++L({"id":"section","alias":"مقطع قطاع sect","label":"مقطع","hint":"نقطتان لخطّ القطع · يُقطَع ما يعبره الخطّ بنطاقه — ولا يتحدّث تلقائياً بعدها"},section);
++const sheet=()=>import("../tools/sheet.js");
++L({"id":"vport","alias":"vp منفذ منفذ_ورقه","label":"منفذ ورقة","hint":"ركنا المستطيل في النموذج — يُسقَط على الورقة بمقياس المنفذ","ico":"sheet"},sheet);
++L({"id":"detail","alias":"dc detail تفصيله وسم","label":"وسم تفصيلة","hint":"معرّف منفذ المصدر · معرّف الهدف · موضع الرمز على النموذج"},sheet);
++L({"id":"addsheet","alias":"shnew ورقه_جديده اضف_ورقه","label":"ورقة جديدة","hint":"تُضاف ورقةٌ بالمقاس الافتراضي وتصير الجارية","ico":"sheet"},sheet);
++L({"id":"renamesheet","alias":"shren سم_الورقه اعد_تسميه","label":"إعادة تسمية الورقة","hint":"الاسمُ الجديد للورقة الجارية — يقبل وسيطاً بعد الأمر","ico":"sheet"},sheet);
++L({"id":"delsheet","alias":"shdel احذف_ورقه","label":"حذف ورقة","hint":"تُحذَف الورقةُ الجارية بمنافذها — ولا تُحذَف الأخيرة","ico":"del"},sheet);
++L({"id":"nextsheet","alias":"shnext الورقه_التاليه","label":"الورقة التالية","hint":"تنقّلٌ دوريٌّ إلى الورقة التالية","ico":"redo"},sheet);
++L({"id":"prevsheet","alias":"shprev الورقه_السابقه","label":"الورقة السابقة","hint":"تنقّلٌ دوريٌّ إلى الورقة السابقة","ico":"undo"},sheet);
++L({"id":"vpclip","alias":"vpc قص_المنفذ حد_المنفذ","label":"قص المنفذ","hint":"انقر خطّاً متعدّداً مغلقاً ليكون حدَّ المنفذ · «انزع» يُعيده مستطيلاً","ico":"sheet"},sheet);
++const clouds=()=>import("../tools/clouds.js");
++L({"id":"cloud","alias":"rcl cloud سحابه مراجعه غيمه","label":"سحابة مراجعة","hint":"نقاط الحلقة · C أو Enter يغلق · نصف قطر الفَلَقة في الخيارات"},clouds);
++L({"id":"cloude","alias":"rcle سحابه_التحديد","label":"سحابة حول التحديد","hint":"حدّد عناصر مغلقة ثم شغّل الأمر · نصف القطر: rcle r=0.3"},clouds);
++const macros=()=>import("../tools/macros.js");
++L({"id":"macrorec","alias":"rec سجل_ماكرو تسجيل_ماكرو","label":"تسجيل ماكرو","hint":"يبدأ تسجيل أوامرك · مرّةً ثانية يوقفه ويحفظه"},macros);
++L({"id":"macroplay","alias":"play شغل_ماكرو ماكرو","label":"تشغيل ماكرو","hint":"play <اسم> — خطوة تراجعٍ واحدة، وأيّ فشلٍ يُرجِع الكلّ"},macros);
++L({"id":"macrodel","alias":"delmacro احذف_ماكرو","label":"حذف ماكرو","hint":"delmacro <اسم>"},macros);
++L({"id":"macrolist","alias":"macros ماكروهات","label":"قائمة الماكروهات","hint":"يعرض الماكروهات المحفوظة"},macros);
++/* تحميلٌ مسبق في الخمول: الأداةُ جاهزةٌ غالباً قبل أوّل نقرة */
++const idle=globalThis.requestIdleCallback||(f=>setTimeout(f,3000));
++idle(()=>{[roof,boqreport,elev,section,sheet,clouds,macros].forEach(f=>f().catch(()=>{}))});
+diff -ruN -x node_modules proj/src/ui/palette.js proj-trial/src/ui/palette.js
+--- proj/src/ui/palette.js	2026-10-25 01:28:42.000000000 +0000
++++ proj-trial/src/ui/palette.js	2026-10-30 00:42:47.552758439 +0000
+@@ -23,7 +23,6 @@
+ import {toggleBlockPanel} from "./blockpanel.js";
+ import {macroList,macroCount,delMacro,recActive} from "../core/macros.js";
+ import {playMacro} from "../ai/macrorun.js";
+-import {toggleRecord} from "../tools/macros.js";
+ /* اتجاهٌ واحد فقط: palette يستورد guideOpen لفتح نتيجة الدليل عند
+    النقر. guide/wire.js لا يستورد palette.js بالمقابل (يتلقّاها
+    حقناً عبر extendPalette من app.js) — فلا دورة. */
+@@ -88,7 +87,7 @@
+   }},
+   {key:"macro.rec",label:"ماكرو: ابدأ/أوقف التسجيل",
+    sub:"يحفظ ما تنفّذه بين المرّتين · المشوب يُرفَض",
+-   fn:()=>{toggleRecord(); HOOK.prompt()}},
++   fn:()=>{import("../tools/macros.js").then(m=>{m.toggleRecord(); HOOK.prompt()})}},
+   {key:"macro.list",label:"ماكرو: شغّل…",sub:"خطوة تراجعٍ واحدة لكل تشغيل",
+    fn:()=>paletteMacros(0)},
+   {key:"macro.del",label:"ماكرو: احذف…",sub:"يُسأل قبل الحذف",
+diff -ruN -x node_modules proj/sw.js proj-trial/sw.js
+--- proj/sw.js	2026-10-26 18:27:08.000000000 +0000
++++ proj-trial/sw.js	2026-10-30 00:44:42.900758439 +0000
+@@ -100,22 +100,22 @@
+  "./src/ui/focustrap.js","./src/ui/gallery.js","./src/ui/gate.js","./src/ui/helpbot.js",
+  "./src/ui/helpbutton.js","./src/ui/helppan.js","./src/ui/historypanel.js","./src/ui/hygiene.js",
+  "./src/ui/i18n.js","./src/ui/icons.js","./src/ui/inspector.js","./src/ui/keymap.js",
+- "./src/ui/layout.js","./src/ui/lazy-tools.js","./src/ui/learn.js","./src/ui/levelManager.js",
+- "./src/ui/levelbar.js","./src/ui/navbar.js","./src/ui/optbar.js","./src/ui/overlay.js",
+- "./src/ui/palette.js","./src/ui/panels.js","./src/ui/presenter.js","./src/ui/pricingPanel.js",
+- "./src/ui/projhub.js","./src/ui/props.js","./src/ui/quickprops.js","./src/ui/recentbar.js",
+- "./src/ui/ribbon/beginner.js","./src/ui/ribbon/custom.js","./src/ui/ribbon/editor.js","./src/ui/ribbon/overflow.js",
+- "./src/ui/ribbon/render.js","./src/ui/ribbon/schema.js","./src/ui/ribbon/wire.js","./src/ui/roles.js",
+- "./src/ui/rpt.js","./src/ui/searchcommon.js","./src/ui/statusbar.js","./src/ui/store.js",
+- "./src/ui/studio.js","./src/ui/styleManager.js","./src/ui/sugg.js","./src/ui/theme.js",
+- "./src/ui/toast.js","./src/ui/touchbar.js","./src/ui/touchtext.js","./src/ui/tour.js",
+- "./src/ui/underlayPanel.js","./src/ui/view3d.js","./src/ui/viewcmds.js","./src/ui/viewport.js",
+- "./src/ui/welcome-model.js","./src/ui/welcome.js","./src/boot-splash.js","./src/core/dimension-input.js",
+- "./src/core/guided-room-wizard.js","./src/core/guided-room.js","./src/core/quick-draw-transaction.js","./src/core/quick-draw.js",
+- "./src/core/quick-opening.js","./src/core/quick-preview.js","./src/core/quick-room.js","./src/core/quick-wall.js",
+- "./src/core/strict-edit.js","./src/tools/guidedroom.js","./src/tools/quickdraw.js","./src/tools/quickopening.js",
+- "./src/tools/quickroom.js","./src/tools/quickwall.js","./src/ui/guidedroom-action.js","./src/ui/guidedroom.js",
+- "./src/workers/compute.js"
++ "./src/ui/layout.js","./src/ui/lazy-civil.js","./src/ui/lazy-tools.js","./src/ui/learn.js",
++ "./src/ui/levelManager.js","./src/ui/levelbar.js","./src/ui/navbar.js","./src/ui/optbar.js",
++ "./src/ui/overlay.js","./src/ui/palette.js","./src/ui/panels.js","./src/ui/presenter.js",
++ "./src/ui/pricingPanel.js","./src/ui/projhub.js","./src/ui/props.js","./src/ui/quickprops.js",
++ "./src/ui/recentbar.js","./src/ui/ribbon/beginner.js","./src/ui/ribbon/custom.js","./src/ui/ribbon/editor.js",
++ "./src/ui/ribbon/overflow.js","./src/ui/ribbon/render.js","./src/ui/ribbon/schema.js","./src/ui/ribbon/wire.js",
++ "./src/ui/roles.js","./src/ui/rpt.js","./src/ui/searchcommon.js","./src/ui/statusbar.js",
++ "./src/ui/store.js","./src/ui/studio.js","./src/ui/styleManager.js","./src/ui/sugg.js",
++ "./src/ui/theme.js","./src/ui/toast.js","./src/ui/touchbar.js","./src/ui/touchtext.js",
++ "./src/ui/tour.js","./src/ui/underlayPanel.js","./src/ui/view3d.js","./src/ui/viewcmds.js",
++ "./src/ui/viewport.js","./src/ui/welcome-model.js","./src/ui/welcome.js","./src/boot-splash.js",
++ "./src/core/dimension-input.js","./src/core/guided-room-wizard.js","./src/core/guided-room.js","./src/core/quick-draw-transaction.js",
++ "./src/core/quick-draw.js","./src/core/quick-opening.js","./src/core/quick-preview.js","./src/core/quick-room.js",
++ "./src/core/quick-wall.js","./src/core/strict-edit.js","./src/tools/guidedroom.js","./src/tools/quickdraw.js",
++ "./src/tools/quickopening.js","./src/tools/quickroom.js","./src/tools/quickwall.js","./src/ui/guidedroom-action.js",
++ "./src/ui/guidedroom.js","./src/workers/compute.js"
+ ];
+ /* CORE:END */
+ 

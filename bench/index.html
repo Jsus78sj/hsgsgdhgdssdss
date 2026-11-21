@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CivilDraft · صفحة القياس (م٠)</title>
+<link rel="stylesheet" href="./bench.css">
+</head>
+<body>
+<h1>صفحة القياس · البوابة ب٠-٢</h1>
+<p>خارج حزمة الإقلاع. تبني مشروع الـ١٠ آلاف عنصر نفسه الذي يقيسه الحارس في Node، ثم تقيس الالتقاط والإصابة وإعادة بناء الفهرس والمشهد وزمن الإطار على هذا الجهاز.</p>
+<p>الزرّ الثاني يفتح التطبيق في نافذةٍ جديدة ويقيس زمن الإطار برسّامه الحقيقي (<code>ui/canvas.js</code>). الحفظ في تلك النافذة معلَّق فلا يُمسّ مشروعك المحفوظ؛ أغلق تبويبات التطبيق الأخرى قبله، وأغلق النافذة بعده.</p>
+<label>الجهاز: <select id="dev">
+ <option value="desktop">سطح مكتب</option>
+ <option value="phone-low">هاتف ضعيف</option>
+ <option value="phone-mid">هاتف متوسط</option>
+ <option value="phone-high">هاتف قوي</option>
+</select></label>
+<input id="model" placeholder="الطراز والمتصفح (مثلاً Galaxy A14 · Chrome 130)">
+<button id="run">ابدأ القياس</button>
+<button id="runApp">قِس بالرسّام الحقيقي داخل التطبيق</button>
+<button id="copy" disabled>انسخ النتيجة JSON</button>
+<pre id="out">—</pre>
+<canvas id="cv" width="800" height="600"></canvas>
+<script type="module" src="./bench.js"></script>
+</body>
+</html>

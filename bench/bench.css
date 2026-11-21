@@ -1,0 +1,6 @@
+body{font:15px/1.6 system-ui,sans-serif;margin:16px;max-width:900px}
+pre{background:#f4f4f4;padding:10px;white-space:pre-wrap;direction:ltr;text-align:left}
+canvas{border:1px solid #ccc;max-width:100%;height:auto}
+button,select,input{font:inherit;margin:4px 0;padding:6px 10px}
+input{min-width:280px}
+.pass{color:#0a7a2f}.fail{color:#b00020}

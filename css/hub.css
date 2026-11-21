@@ -1,0 +1,88 @@
+/* ═══ مركز المشروع · مساحات الدور · إمكانية الوصول ═══ المرحلة ٢ */
+.hbWrap{position:fixed;inset:0;z-index:var(--z-dialog);background:rgba(0,0,0,.45);
+ display:flex;align-items:center;justify-content:center;padding:16px}
+.hbWrap[hidden]{display:none}
+.hb{width:min(680px,100%);max-height:min(640px,92vh);display:flex;flex-direction:column;
+ background:var(--bg2,#1d2128);color:var(--fg,#e8eaed);border:1px solid var(--line,#3a414c);
+ border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.45)}
+.hbHead{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+ border-bottom:1px solid var(--line,#3a414c)}
+.hbX{background:none;border:0;color:inherit;font-size:16px;min-width:44px;min-height:44px;cursor:pointer}
+.hbTabs{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--line,#3a414c)}
+.hbTabs button{min-height:44px;padding:0 14px;background:none;border:0;border-radius:6px;
+ color:inherit;cursor:pointer}
+.hbTabs button.on{background:var(--brand-soft,#243a4d);color:var(--brand,#5ab0ff)}
+.hbBody{padding:14px 16px;overflow:auto;flex:1}
+.hbFoot{display:flex;align-items:center;justify-content:space-between;gap:12px;
+ padding:10px 16px;border-top:1px solid var(--line,#3a414c)}
+.hbFoot button,.hbBtns button,.hbStart button{min-height:44px;padding:0 14px;border-radius:6px;
+ border:1px solid var(--line,#3a414c);background:var(--bg3,#262c35);color:inherit;cursor:pointer}
+.hbSaved{font-size:12px;color:var(--ok,#7bd88f)}
+.hbNote{font-size:12.5px;color:var(--fg3,#9aa3ad);margin:6px 0 12px}
+.hbGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.hbF{display:flex;flex-direction:column;gap:4px;font-size:12.5px}
+.hbF input,.hbF select{min-height:44px;padding:6px 10px;border-radius:6px;
+ border:1px solid var(--line,#3a414c);background:var(--bg,#14171c);color:inherit;font:inherit}
+.hbBody h4{margin:14px 0 8px;font-size:13px}
+.hbRoles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.hbRole{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:88px;
+ padding:12px;border-radius:8px;border:1px solid var(--line,#3a414c);background:var(--bg3,#262c35);
+ color:inherit;text-align:start;cursor:pointer}
+.hbRole.on{border-color:var(--brand,#5ab0ff);box-shadow:0 0 0 1px var(--brand,#5ab0ff) inset}
+.hbRole small{color:var(--fg3,#9aa3ad);font-size:12px}
+.hbIc{font-size:20px}
+.hbStart{display:flex;flex-direction:column;gap:12px}
+.hbBtns{display:flex;flex-wrap:wrap;gap:8px}
+.rbRole{min-height:44px;padding:0 10px;border-radius:6px;border:1px dashed var(--line,#3a414c);
+ background:none;color:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.rbRole.on{border-style:solid;border-color:var(--brand,#5ab0ff);color:var(--brand,#5ab0ff)}
+.mmRole{font-weight:600}
+
+/* ── حجم الخط: ١١٥٪ و١٣٠٪ ── */
+html[data-fs="115"]{font-size:115%}
+html[data-fs="130"]{font-size:130%}
+/* ── تباينٌ عالٍ: حدودٌ أوضح ونصٌّ أبيض ── */
+html[data-contrast] body{--fg:#ffffff;--fg3:#d6dbe1;--line:#9aa3ad}
+html[data-contrast] button:focus-visible,html[data-contrast] input:focus-visible,
+html[data-contrast] select:focus-visible{outline:3px solid #ffd54a;outline-offset:2px}
+/* ── بلا انتقالات ── */
+html[data-still] *,html[data-still] *::before,html[data-still] *::after{
+ transition:none!important;animation-duration:0.01ms!important;animation-iteration-count:1!important}
+/* ── أهداف اللمس ≥ ٤٤ بكسل في الحوارات ── */
+.hbWrap button,.hbWrap input,.hbWrap select{min-height:44px}
+
+/* ═══ التلميح بجانب المؤشّر ═══ المرحلة ٢ — نصٌّ لا حقل: لا يلتقط نقرةً */
+.curHint{position:absolute;inset-inline-start:0;inset-block-start:0;z-index:var(--z-dyn);
+ pointer-events:none;max-inline-size:min(320px,70vw);padding:4px 8px;border-radius:var(--r1);
+ background:color-mix(in srgb,var(--bg3) 88%,transparent);color:var(--fg);
+ border:1px solid var(--line,#3a414c);font-size:12px;line-height:1.4;white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis;will-change:transform}
+.curHint[hidden]{display:none}
+
+/* ═══ v2.6.0 · البدء والمشاريع الأخيرة وبلوك العنوان ═══ */
+.hbRecent{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.hbRecent li{display:flex;gap:6px;align-items:stretch}
+.hbRec{flex:1;display:flex;flex-direction:column;align-items:flex-start;min-height:44px;padding:6px 12px;
+ border-radius:6px;border:1px solid var(--line,#3a414c);background:var(--bg3,#262c35);color:inherit;
+ text-align:start;cursor:pointer}
+.hbRec small{color:var(--fg3,#9aa3ad);font-size:12px}
+.hbDel{min-width:44px;min-height:44px;background:none;border:1px solid var(--line,#3a414c);
+ border-radius:6px;color:var(--fg3,#9aa3ad);cursor:pointer}
+.hbTpls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.hbTpl{display:flex;flex-direction:column;align-items:flex-start;min-height:56px;padding:8px 10px;
+ border-radius:6px;border:1px solid var(--line,#3a414c);background:var(--bg3,#262c35);color:inherit;
+ text-align:start;cursor:pointer}
+.hbTpl small{color:var(--fg3,#9aa3ad);font-size:12px}
+.hbNone{color:var(--fg3,#9aa3ad);text-align:center}
+.hbRevs{width:100%;border-collapse:collapse;font-size:12.5px}
+.hbRevs th{text-align:start;font-weight:600;padding:4px 6px;color:var(--fg3,#9aa3ad)}
+.hbRevs td{padding:3px 4px}
+.hbRevs input{width:100%;min-height:40px;padding:4px 6px;border-radius:6px;
+ border:1px solid var(--line,#3a414c);background:var(--bg,#14171c);color:inherit;font:inherit}
+.hbLogoAct button{min-height:44px}
+.hbBtns button:disabled{opacity:.5;cursor:not-allowed}
+.hbTabs button:focus-visible,.hbRole:focus-visible,.hbRec:focus-visible,.hbTpl:focus-visible{outline:2px solid var(--brand,#5ab0ff);outline-offset:2px}
+
+/* v2.6.0 — ترحيبُ أوّل تشغيل فوق بطاقات الدور */
+.hbFirst{margin:0 0 10px; padding:10px 12px; border-radius:var(--r1);
+ background:var(--brandq); color:var(--brandf); font-size:var(--fs-sm)}
