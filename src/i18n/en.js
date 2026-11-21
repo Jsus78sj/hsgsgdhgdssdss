@@ -24,9 +24,9 @@ export const EN = {
  "الانتقالات الناعمة":"Smooth transitions","كبّر خطّ الواجهة":"Larger interface text",
  "بدّل القشرة":"Switch shell","بدّل السمة":"Toggle theme","بدّل الكثافة":"Toggle density",
  "شاشة نظيفة":"Clean screen","اطوِ الشريط":"Collapse ribbon","المساعدة":"Help",
- "الدليل التعليمي":"Learning guide","الإعدادات":"Settings","البحث":"Search",
+ "الدليل التعليمي":"Learning guide","البحث":"Search",
  /* مركز المشروع */
- "البدء":"Start","معلومات المشروع":"Project info","اختر مساحة العمل":"Choose a workspace",
+ "البدء":"Start","اختر مساحة العمل":"Choose a workspace",
  "أكمل معلومات المشروع":"Complete project info","جولة سريعة":"Quick tour",
  "اسم المشروع":"Project name","المالك":"Owner","الموقع":"Location","اسم المكتب":"Office name",
  "رقم الرخصة":"License no.","المصمّم":"Designer","المدقّق":"Checker","المعتمِد":"Approver",
