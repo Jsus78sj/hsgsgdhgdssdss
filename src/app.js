@@ -19,7 +19,6 @@ import "./tools/annotate.js";
 import "./tools/ref.js";
 import "./tools/boq.js";
 import "./tools/groups.js";
-import "./tools/showcase.js";
 import "./ui/lazy-civil.js";   /* عقبُ الأدوات المدنية النادرة (إكمال م١): الوحدات تُحمَّل عند الطلب */
 import {keysFor,renderKeys} from "./ui/cmdkeys.js";     /* قالب «فيلا العرض»: يُبنى بالأدوات نفسها */
 import "./ui/hygiene.js";
@@ -36,6 +35,7 @@ import "./ui/appcmds.js";      /* أوامر التطبيق النصية (مرح
 import "./ui/viewcmds.js";     /* أوامر المناظر المسمّاة */
 import {installDefaults as installTemplateDefaults,apply as applyTemplate}
  from "./core/templates.js";
+import {needsLoad,loadTemplate} from "./ui/lazy-templates.js";
 import {onChange as onUnderlayChange,onWarn as onUnderlayWarn}
  from "./core/underlay.js";
 import {BLK_LAY} from "./core/laydef.js";
@@ -411,6 +411,7 @@ function build(){
  autoFit();
 }
 function useTemplate(name,again){
+ if(!again&&needsLoad(name)){rep("in","يُحمَّل القالب…"); loadTemplate(name).then(()=>useTemplate(name,1),e=>rep("er","تعذّر القالب: "+errMsg(e))); return}
  let r=null;
  try{r=applyTemplate(name)}
  catch(e){
