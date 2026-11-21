@@ -15,10 +15,10 @@ import {snapTake,snapList,snapRestore,snapsLoad} from "../io/snaps.js";
 import {escapeHtml as esc} from "../core/escape.js";
 import {norm,toLat,score,smartScore} from "./searchcommon.js";
 import {ROLES,ROLE_IDS,ALL_NAME} from "./roles.js";
-import {SERIES} from "../tutor/lessons.js";
 import {UIS} from "./store.js";
 import {undo,redo,editFailed} from "../core/state.js";
 import {apply as applyTemplate} from "../core/templates.js";
+import {needsLoad,loadTemplate} from "./lazy-templates.js";
 import {toggleHistoryPanel} from "./historypanel.js";
 import {toggleBlockPanel} from "./blockpanel.js";
 import {macroList,macroCount,delMacro,recActive} from "../core/macros.js";
@@ -30,6 +30,17 @@ const guideOpen=id=>import("../guide/wire.js").then(G=>G.guideOpen(id));
 
 const $=s=>document.querySelector(s);
 let BODY=null,NT=-1,LIST=[],IDX=0,OPEN=0;
+/* فهرسُ الدروس (tutor/lessons.js ≈ 35 ك.ب خام) خارج الإقلاع: يُطلَب عند أوّل بناءٍ
+   للفهرس، وحين يصل يُعاد البناء ويُحدَّث ما على الشاشة إن كان البحثُ مفتوحاً. */
+let SERIES=null,SER_ASK=0;
+function askSeries(){
+ if(SERIES||SER_ASK)return; SER_ASK=1;
+ import("../tutor/lessons.js").then(M=>{
+  SERIES=M.SERIES; BODY=null;
+  const B=box(), inp=B&&B.querySelector("input");
+  if(OPEN&&inp&&inp.value.trim()){LIST=rank(inp.value); render()}
+ }).catch(()=>{SER_ASK=0});
+}
 const box=()=>$("#palette");
 /* ═══ إقحام الدليل — G4 ═══
    entries: مدخلات guide/catalog تُدفَع كـkind:"guide". extendPalette
@@ -49,7 +60,7 @@ export function extendCalcs(entries){
 function build(){
  const n=R.toolList().length;
  if(BODY&&n===NT)return BODY;
- NT=n; const out=[];
+ NT=n; const out=[]; askSeries();
  R.toolList().filter(d=>d&&d.id).forEach(d=>{
   const al=Object.keys(R.TOOLS).filter(k=>R.TOOLS[k]===d&&k!==d.id);
   /* ═══ البيتُ يُعرَض مع النتيجة ═══ المرحلة ١ من خطّة الواجهة
@@ -287,6 +298,7 @@ function jrReplay(){
 /* المرحلة ٢ (v2.6.0): مركزُ المشروع يطبّق القالبَ بالمسار نفسِه — لا مسارَ ثانٍ */
 export const paletteTemplate=name=>useTemplate(name);
 function useTemplate(name,again){
+ if(!again&&needsLoad(name)){HOOK.report("in","يُحمَّل القالب…"); loadTemplate(name).then(()=>useTemplate(name,1),e=>HOOK.report("er","تعذّر القالب: "+((e&&e.message)||e))); return}
  let r=null;
  try{r=applyTemplate(name)}
  catch(e){
@@ -391,4 +403,4 @@ function run(x){
   snapRestore(m.id).then(r=>{if(r.ok){HOOK.report("ok",`استُعيدت اللقطة · ${r.w} جدار`);HOOK.refresh(1)}
    else HOOK.report("er",r.err)});
  }
-}
+    }
