@@ -2551,6 +2551,17 @@ group("الأدواتُ المدنية الكسولة (src/ui/lazy-civil.js) —
  ok(!/^import\s+[^\n]*tools\/(roof|boqreport|elev|section|sheet|clouds|macros)\.js/m.test(ap),"لا استيرادَ ساكناً لوحداتها في app.js");
  ok(/typeof document!=="undefined"/.test(lc)&&/requestIdleCallback/.test(lc),"والتحميل المسبق في الخمول في المتصفح وحده");
 });
+group("قالب «فيلا العرض» وفهرس الدروس خارج الإقلاع (src/ui/lazy-templates.js) — ميزانية dist",()=>{
+ const lt=SRC.get(join(ROOT,"src/ui/lazy-templates.js"))||"";
+ const ap=SRC.get(join(ROOT,"src/app.js"))||"";
+ const pl=SRC.get(join(ROOT,"src/ui/palette.js"))||"";
+ const ct=SRC.get(join(ROOT,"src/core/templates.js"))||"";
+ ok(/showcase:\(\)=>import\("\.\.\/tools\/showcase\.js"\)/.test(lt),"src/ui/lazy-templates.js: يستورد showcase.js حركياً");
+ ok(!/tools\//.test(ct.replace(/\/\*[\s\S]*?\*\//g,"")),"والاتجاه core ← tools ثابت: core/templates.js لا يذكر tools/");
+ ok(/from "\.\/ui\/lazy-templates\.js"/.test(ap)&&/from "\.\/lazy-templates\.js"/.test(pl),"app.js وpalette.js يمرّان بالمسار نفسه قبل تطبيق القالب");
+ ok(!/^import\s+[^\n]*tools\/showcase\.js/m.test(ap),"لا استيرادَ ساكناً لـ showcase.js في app.js");
+ ok(!/^import\s+[^\n]*tutor\/lessons\.js/m.test(pl)&&/import\("\.\.\/tutor\/lessons\.js"\)/.test(pl),"palette.js: فهرس الدروس يُحمَّل حركياً لا ساكناً");
+});
 group("م٢أ · اختيار الالتقاط — الواجهة (src/ui/osov.js كسولة)",()=>{
  const ov=SRC.get(join(ROOT,"src/ui/osov.js"))||"";
  const tb=SRC.get(join(ROOT,"src/ui/touchbar.js"))||"";
